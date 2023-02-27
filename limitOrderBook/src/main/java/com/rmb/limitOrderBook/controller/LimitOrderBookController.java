@@ -21,12 +21,12 @@ public class LimitOrderBookController {
         return new ResponseEntity<List<OrderBook>>(orderBookService.addOrder(orderBook),HttpStatus.CREATED);
     }
 
-    @PostMapping("/orderBook/update")
+    @PutMapping ("/orderBook/update")
     public ResponseEntity<List<OrderBook>> updateOrder(@RequestBody OrderBook orderBook){
         return new ResponseEntity<List<OrderBook>>(orderBookService.updateOrder(orderBook),HttpStatus.ACCEPTED);
     }
 
-    @PostMapping("/orderBook/delete")
+    @DeleteMapping("/orderBook/delete")
     public ResponseEntity<List<OrderBook>> deleteOrder(@RequestBody OrderBook orderBook){
         return ResponseEntity.ok().body(orderBookService.deleteOrder(orderBook));
     }
