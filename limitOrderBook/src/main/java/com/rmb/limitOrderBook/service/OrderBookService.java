@@ -1,6 +1,7 @@
 package com.rmb.limitOrderBook.service;
 
 import com.rmb.limitOrderBook.model.OrderBook;
+import org.springframework.stereotype.Service;
 
 import java.util.List;
 

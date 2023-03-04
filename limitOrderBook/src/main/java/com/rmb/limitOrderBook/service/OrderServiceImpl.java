@@ -2,16 +2,17 @@ package com.rmb.limitOrderBook.service;
 
 import com.rmb.limitOrderBook.exception.ResouceNotFoundException;
 import com.rmb.limitOrderBook.model.OrderBook;
+import com.rmb.limitOrderBook.model.OrderExecutionRecord;
 import com.rmb.limitOrderBook.model.OrderType;
 import com.rmb.limitOrderBook.repository.limitOrderBookRepo;
+import com.rmb.limitOrderBook.repository.limitOrderExecutionRepo;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.Comparator;
-import java.util.List;
-import java.util.NoSuchElementException;
-import java.util.Optional;
+import java.sql.Timestamp;
+import java.time.Instant;
+import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 @Service
@@ -21,12 +22,16 @@ public class OrderServiceImpl  implements OrderBookService {
     @Autowired
     private limitOrderBookRepo limitOrderBookRepo;
 
-    int priority = 0;
+    @Autowired
+    private com.rmb.limitOrderBook.repository.limitOrderExecutionRepo orderExecutionRepo;
+
+
+    //int priority = 0;
 
     @Override
     public List<OrderBook> addOrder(OrderBook orderBook) {
-
-        orderBook.setPriority(++priority);
+        OrderExecutionRecord executionRecord=new OrderExecutionRecord();
+        //orderBook.setPriority(++priority);
       /*  if(orderBook.getOrderType().equals("BUY")){
             orderBook.setOrderType(OrderType.BUY);
         }
@@ -34,33 +39,59 @@ public class OrderServiceImpl  implements OrderBookService {
             orderBook.setOrderType(OrderType.SELL);
             orderBook.setOrderType(OrderType.SELL);
         }*/
-
-        OrderBook resultOrderBook = limitOrderBookRepo.save(orderBook);
-        List<OrderBook> sortedList=limitOrderBookRepo.findAll().stream()
+        executionRecord.setBidOrderPrice(orderBook.getPrice());
+        executionRecord.setQuantity(orderBook.getQuantity());
+        executionRecord.setOrderType(orderBook.getOrderType());
+       // OrderBook resultOrderBook =
+                limitOrderBookRepo.save(orderBook);
+        orderExecutionRepo.save(executionRecord);
+        System.out.println(orderExecutionRepo.findAll());
+       /* List<OrderBook> sortedList=limitOrderBookRepo.findAll().stream()
                 .sorted(Comparator.comparing(OrderBook::getPrice).reversed()).collect(Collectors.toList());
+*/
+        List<OrderBook> sortedList=limitOrderBookRepo.findAll().stream().sorted(Comparator.comparing(OrderBook::getPrice).reversed().thenComparing(OrderBook::getCreatedTime)).collect(Collectors.toList());
+
         return sortedList;
     }
 
     @Override
     public List<OrderBook> updateOrder(OrderBook orderBook) {
-        Optional<OrderBook> updateOrderDetails = this.limitOrderBookRepo.findById(orderBook.getId());
-        OrderBook pr = limitOrderBookRepo.findAll().stream().max(Comparator.comparing(OrderBook::getPriority)).orElseThrow(NoSuchElementException::new);
+        Timestamp timestamp=new Timestamp(System.currentTimeMillis());
+        Instant instanceNow3 = timestamp.toInstant();
+        Date date = new Date(timestamp.getTime());
+        Long id=orderBook.getId();
+
+        Optional<OrderBook> updateOrderDetails= this.limitOrderBookRepo.findById(orderBook.getId());
+        Optional<OrderExecutionRecord> updateOrderExecutedDetails= this.orderExecutionRepo.findById(orderBook.getId());
+
+
+        //OrderBook pr = limitOrderBookRepo.findAll().stream().max(Comparator.comparing(OrderBook::getPriority)).orElseThrow(NoSuchElementException::new);
         OrderBook orderBookUpdatedfinal = null;
+        OrderExecutionRecord executionRecord=null;
+
         if (updateOrderDetails.isPresent()) {
-            orderBookUpdatedfinal = updateOrderDetails.get();
+           orderBookUpdatedfinal = updateOrderDetails.get();
             orderBookUpdatedfinal.setId(orderBook.getId());
             orderBookUpdatedfinal.setPrice(orderBook.getPrice());
             orderBookUpdatedfinal.setQuantity(orderBook.getQuantity());
-            orderBookUpdatedfinal.setPriority(pr.getPriority() + 1);
+            orderBookUpdatedfinal.setCreatedTime(timestamp);
             limitOrderBookRepo.saveAndFlush(orderBookUpdatedfinal);
+
+            executionRecord = updateOrderExecutedDetails.get();
+            executionRecord.setId(orderBook.getId());
+            executionRecord.setBidOrderPrice(orderBook.getPrice());
+            executionRecord.setQuantity(orderBook.getQuantity());
+            executionRecord.setCreatedTime(timestamp);
+            orderExecutionRepo.saveAndFlush(executionRecord);
 
         }
         else {
             throw  new ResouceNotFoundException("orderBookRecord not Found");
         }
 
-        List<OrderBook> sortedmodifiedList=limitOrderBookRepo.findAll().stream()
-                .sorted(Comparator.comparing(OrderBook::getPrice).reversed()).collect(Collectors.toList());
+        List<OrderBook> sortedmodifiedList=limitOrderBookRepo.findAll().stream().sorted(Comparator.comparing(OrderBook::getPrice).reversed().thenComparing(OrderBook::getCreatedTime)).collect(Collectors.toList());
+
+
 
         return sortedmodifiedList;
     }
@@ -70,7 +101,6 @@ public class OrderServiceImpl  implements OrderBookService {
         Optional<OrderBook> deleteOrderDetails = this.limitOrderBookRepo.findById(orderBook.getId());
         if (deleteOrderDetails.isPresent()) {
             this.limitOrderBookRepo.delete(deleteOrderDetails.get());
-
         }
         else {
             throw  new ResouceNotFoundException("orderBookRecord not Found");
