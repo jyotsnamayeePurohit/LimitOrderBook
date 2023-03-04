@@ -23,13 +23,10 @@ public class OrderExecutionServiceImpl implements  OrderExecutionService{
     @Override
     public List<OrderExecutionRecord> getAllExecutedOrder( Integer price, Integer amount,String orderType) {
         OrderExecutionRecord orderExecutionRecord = null;
-        List<OrderExecutionRecord> result1 =limitOrderExecutionRepo.findAll();
-        System.out.println(result1);
        List<OrderExecutionRecord> result =limitOrderExecutionRepo.findAll().stream()
                .filter(s->s.getBidOrderPrice()!=0 ||s.getBidOrderPrice().equals(price))
                .filter(p->p.getOrderType()!=null || p.getOrderType().equals(orderType))
                .collect(Collectors.toList());
-System.out.println(result.size());
 
         // check the price
         if (result.isEmpty()) {

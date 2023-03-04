@@ -31,24 +31,11 @@ public class OrderServiceImpl  implements OrderBookService {
     @Override
     public List<OrderBook> addOrder(OrderBook orderBook) {
         OrderExecutionRecord executionRecord=new OrderExecutionRecord();
-        //orderBook.setPriority(++priority);
-      /*  if(orderBook.getOrderType().equals("BUY")){
-            orderBook.setOrderType(OrderType.BUY);
-        }
-        else{
-            orderBook.setOrderType(OrderType.SELL);
-            orderBook.setOrderType(OrderType.SELL);
-        }*/
         executionRecord.setBidOrderPrice(orderBook.getPrice());
         executionRecord.setQuantity(orderBook.getQuantity());
         executionRecord.setOrderType(orderBook.getOrderType());
-       // OrderBook resultOrderBook =
                 limitOrderBookRepo.save(orderBook);
         orderExecutionRepo.save(executionRecord);
-        System.out.println(orderExecutionRepo.findAll());
-       /* List<OrderBook> sortedList=limitOrderBookRepo.findAll().stream()
-                .sorted(Comparator.comparing(OrderBook::getPrice).reversed()).collect(Collectors.toList());
-*/
         List<OrderBook> sortedList=limitOrderBookRepo.findAll().stream().sorted(Comparator.comparing(OrderBook::getPrice).reversed().thenComparing(OrderBook::getCreatedTime)).collect(Collectors.toList());
 
         return sortedList;
@@ -64,8 +51,6 @@ public class OrderServiceImpl  implements OrderBookService {
         Optional<OrderBook> updateOrderDetails= this.limitOrderBookRepo.findById(orderBook.getId());
         Optional<OrderExecutionRecord> updateOrderExecutedDetails= this.orderExecutionRepo.findById(orderBook.getId());
 
-
-        //OrderBook pr = limitOrderBookRepo.findAll().stream().max(Comparator.comparing(OrderBook::getPriority)).orElseThrow(NoSuchElementException::new);
         OrderBook orderBookUpdatedfinal = null;
         OrderExecutionRecord executionRecord=null;
 
