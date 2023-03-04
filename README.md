@@ -1,6 +1,8 @@
 # LimitOrderBook
-I have created a restful application for orderbook.
-For addOrder I  can call via postman http://localhost:8080/orderBook/add
-For modifiedOrder I  can call via postman http://localhost:8080/orderBook/update
-For deleteOrder I  can call via postman http://localhost:8080/orderBook/delete
+I have created a restful application for orderbook and execution of orderbook
+For addOrder  call via postman http://localhost:8080/orderBook/add( post method)
+For modifiedOrder   call via postman http://localhost:8080/orderBook/update( put method)
+For deleteOrder  call via postman http://localhost:8080/orderBook/delete( delete method)
+for 2nd part 
+for execution  call via postman http://localhost:8080/orderBook/executionedRecords?Price=9&Amount=55( get method)
 
